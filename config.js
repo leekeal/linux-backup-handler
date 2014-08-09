@@ -7,6 +7,7 @@ module.exports = {
 		name:'test',
 		username:'leeke',
 		password:'pw62201991db',
-		folder:'./backup/database/',
+		folder:'./backup/database/',/*最后的文件夹名词后必须加 '/' */
+		remoteFolder:'./backup/database/',
 	},
 }

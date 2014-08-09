@@ -1,33 +1,31 @@
 var fs = require('fs-extra');
+var FTPS = require('ftps');
 var config = require('./config');
 
-module.exports = function(){
-	// create backup folder of database
+exports.connectRemoteServer = function(app){
+	var FTPS = require('ftps');
+	var ftps = new FTPS({
+		host: 'fwind.me', 
+		username: 'leeke', 
+		password: 'ls62201991', 
+		protocol: 'sftp',
+	});
+
+	return ftps;
+}
+
+exports.localFolder = function(){
 	if(!fs.existsSync(config.database.folder)){
 		console.log('backup folder of database is not exist');
 		fs.mkdirsSync(config.database.folder);
 		console.log('Have created backup folder of database');
 	}
-
-	setKuaipanInfo();
 }
 
-
-
-function setKuaipanInfo(){
-	var kuaipan = require("./lib/kuaipan");
-	var USerInfoFile = './cache/userinfo.json'
-
-	try	{
-		kuaipan.setKey("consumer_key","xc82kj5F9yIxT3Tv");
-		kuaipan.setKey("consumer_secret","GFGeJ1jIsajxGwOl");
-		// 授权文件存在，获取授权信息
-		var userinfo = JSON.parse(fs.readFileSync(USerInfoFile));
-		kuaipan.setKey("oauth_token",userinfo.oauth_token);
-		kuaipan.setKey("oauth_token_secret",userinfo.oauth_token_secret);
-	}catch(err){
-
-		console.log('用户accessToken加载失败')
-		throw err;
-	}
+exports.remoteServer = function(ftps){
+	ftps.raw('mkdir -p '+config.database.remoteFolder).exec(function(err,data){
+		if(data.error){
+			console.log('配置文件设置的 数据库备份目录已经存在或者权限不够不能创建')
+		}
+	});
 }
