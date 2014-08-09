@@ -1,0 +1,23 @@
+{
+  "name": "linux-backup-handler",
+  "version": "0.0.0",
+  "main": "app.js",
+  "dependencies": {
+    "dateformat": "^1.0.8-1.2.3",
+    "fs-extra": "^0.10.0",
+    "koa": "^0.8.2",
+    "koa-hbs": "^0.4.6",
+    "koa-router": "^3.2.3",
+    "koa-static": "^1.4.6",
+    "thunkify": "^2.1.2",
+    "request": "^2.40.0",
+    "q": "^1.0.1",
+    "form-data": "^0.1.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
