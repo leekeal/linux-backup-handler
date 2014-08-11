@@ -2,6 +2,6 @@
 
 	node-dev --harmony app.js
 
-#启动grunt工具
+#启动grunt开发工具
 
 	grunt dev

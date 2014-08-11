@@ -1,70 +1,83 @@
 var jf = require('jsonfile')
 var fs = require('fs-extra');
+var co = require('co');
+var merge = require('merge')
 var configPath = './server/config.json';
 
 
+var config = {};
 /* configuration handler*/
 module.exports = function(app){
-	app.use(function *(next){
-		var error = null;
-		var config = yield readConfig();
-		config = config || {};
-		config.save = saveConfig;
-		config.read = readConfig;
-		config.exists = function(){
-			return function(cb){
-				fs.exists(configPath,function(result){
-					cb(null,result);
-				});
+	return function(cb){
+		// var config = config || {};
+		co(function *(){
+			try{
+				config = yield readConfig();
+				config.installed = true;
+			}catch(err){
+				config.installed = false;
 			}
-		}
 
-		function saveConfig(config){
-			return function(cb){
+			config.save = saveConfig;
+			config.read = readConfig;
+			config.exists = exists;
 
-				jf.writeFile(configPath,config,cb)
-
-				jf.writeFile(configPath,config,function(err){
-					if(err){
-						error = err;
+			app.use(function *(next){
+				this.config = config;
+				if(!config.installed){
+					if(this.path == '/install'){
+						yield next
+					}else{
+						this.body = {install:'Configuration file does not exist or app is not installed.'}
 					}
-					cb(null,null);
-				})
+				}else{
+					yield next;
+				} 
+			})
 
-			}
-		}
-		function readConfig(){
-			return function(cb){
-				jf.readFile(configPath,function(err,result){
-					if(err){
-						error = err;
-						cb(null,null);
-					}
-					else{
-						cb(null,result)
-					}
-				});
-			}
-		}
+			cb(null,true);
 
-		this.config = config;
-		yield next;
-		/*Unified handling errors*/
-		if(error){
-			console.error(error);
-			/*系统初始页面，不统一响应错误信息，返回初始化结果*/
-			if(this.path = '/init'){
-				return;
-			}
+		})()
 
-			if(error.code == 'ENOENT'){
-				this.body = {
-					error:'Configuration file does not exist or app is not installed.',
-					type:'NotInstalled'
-				}
-			}else{
-				this.body = {error:error};
+	}
+
+}
+
+
+
+
+
+function exists(){
+	return function(cb){
+		fs.exists(configPath,function(result){
+			cb(null,result);
+		});
+	}
+}
+
+function saveConfig(newConfig){
+	return function(cb){
+		jf.writeFile(configPath,newConfig,function(err){
+			if(err){
+				cb(err,null);
 			}
-		}
-	})
+			else{
+				merge(config,newConfig);/*合并新的config到原始config对象中*/
+				cb(null,true);
+			}
+		})
+
+	}
+}
+function readConfig(){
+	return function(cb){
+		jf.readFile(configPath,function(err,result){
+			if(err){
+				cb(err,null);
+			}
+			else{
+				cb(null,result)
+			}
+		});
+	}
 }

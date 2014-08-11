@@ -5,7 +5,7 @@ module.exports = function(app){
 
 
 	/* Initialize the system configuration*/
-	app.get('/init',function *(next){
+	app.get('/install',function *(next){
 		var config = {
 			url:'http://127.0.0.1:3000',
 			mysqldumpPath : '/Applications/MAMP/Library/bin/mysqldump ',
@@ -25,7 +25,10 @@ module.exports = function(app){
 			return this.body = {error:'Configuration file already exists'};
 		}
 
+		config.installed = true;
 		yield this.config.save(config);
+
+
 		this.body = config;
 	});
 }

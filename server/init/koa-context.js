@@ -1,4 +1,3 @@
-var serve = require('koa-static');
 var router = require('koa-router');
 var hbs = require('koa-hbs');
 var koaBody = require('koa-body');
@@ -18,5 +17,5 @@ module.exports = function(app){
 	}));
 
 	app.use(router(app));
-	app.use(serve('./public'));
+
 }
