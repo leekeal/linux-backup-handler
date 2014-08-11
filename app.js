@@ -1,30 +1,23 @@
 var koa = require('koa');
-var serve = require('koa-static');
-var router = require('koa-router');
-var hbs = require('koa-hbs');
 var app = koa();
-var init = require('./init');
+var port = process.env.PORT || 3000;
+app.keys = ['linux_backup_handler', 'asdfijdlkfjaskdljfwerjdafsf'];
 
 
 
-app.use(hbs.middleware({
-	viewPath: __dirname + '/views'
-}));
+require('./server/init/config')(app);
+require('./server/init/mail')(app);
+/*configfile must be front of router */
+require('./server/init/koa-context')(app);
 
-init.localFolder();/* Initialzation local folder*/
-var ftps = init.connectRemoteServer(); 
-init.remoteServer(ftps);
 
-app.use(function *(next){
-	this.ftps = ftps; /*Set ftps to context*/
-	yield next;
-})
 
-app.use(router(app));
-app.use(serve(__dirname + '/public'));
-
-require('./controllers/backup')(app);
-app.listen(3000);
+require('./server/controllers/user')(app);
+require('./server/controllers/backup')(app);
+require('./server/controllers/configuration')(app);
+require('./server/controllers/db')(app);
+app.listen(port);
+console.info('Server startup  was successful. \nhttp://127.0.0.1:'+port)
 
 
 

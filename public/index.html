@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html ng-app = 'app'>
 <head>
-	<title>Backup center</title>
+	<title></title>
+	<script type="text/javascript" src="lib/angular.js"></script>
+	<script type="text/javascript" src="lib/angular-route.js"></script>
+	<script type="text/javascript" src='app.all.js'></script>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap/css/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="css/login.css">
 </head>
 <body>
-	<button>数据库备份</button>
-	<button>网站文件备份</button>
+	<div ng-view></div>
 </body>
 </html>
