@@ -1,4 +1,3 @@
-var router = require('koa-router');
 var hbs = require('koa-hbs');
 var koaBody = require('koa-body');
 var session = require('koa-session');
@@ -16,6 +15,6 @@ module.exports = function(app){
 		viewPath:'./views'
 	}));
 
-	app.use(router(app));
+	
 
 }

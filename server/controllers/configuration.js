@@ -1,5 +1,6 @@
 var thunkify = require('thunkify');
 var fs = require('fs');
+var merge = require('merge');
 
 module.exports = function(app){
 
@@ -14,7 +15,8 @@ module.exports = function(app){
 			password:'test',
 		};
 		var email = {
-			username:'leeke',
+			service:'gmail',
+			username:'leeke.priv',
 			password:'ls20080813',
 			address:'leeke.priv@gmail.com'
 		}
@@ -31,6 +33,14 @@ module.exports = function(app){
 
 		this.body = config;
 	});
+
+	app.put('/config',function *(){
+		var  newConfig = this.post;
+		var config = this.config;
+
+		merge(config,newConfig);
+		this.body = config;
+	})
 }
 
 

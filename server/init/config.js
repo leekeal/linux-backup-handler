@@ -8,42 +8,38 @@ var configPath = './server/config.json';
 var config = {};
 /* configuration handler*/
 module.exports = function(app){
-	return function(cb){
-		// var config = config || {};
-		co(function *(){
-			try{
-				config = yield readConfig();
-				config.installed = true;
-			}catch(err){
-				config.installed = false;
-			}
 
-			config.save = saveConfig;
-			config.read = readConfig;
-			config.exists = exists;
-
-			app.use(function *(next){
-				this.config = config;
-				if(!config.installed){
-					if(this.path == '/install'){
-						yield next
-					}else{
-						this.body = {install:'Configuration file does not exist or app is not installed.'}
-					}
-				}else{
-					yield next;
-				} 
-			})
-
-			cb(null,true);
-
-		})()
-
+	try{
+		config =  readConfigSync();
+		config.installed = true;
+	}catch(err){
+		config.installed = false;
 	}
 
+	config.save = saveConfig;
+	config.read = readConfigSync;
+	config.exists = exists;
+
+	app.config = config;/* Set the config into app*/
+
+	app.use(function *(next){
+	
+		this.config = config;/*Set the config into context*/
+
+
+		if(!config.installed){
+			if(this.path == '/install'){
+				yield next
+			}else{
+				this.body = {install:'Configuration file does not exist or app is not installed.'}
+			}
+		}else{
+			yield next;
+		} 
+	}) 
+
+
 }
-
-
 
 
 
@@ -69,15 +65,8 @@ function saveConfig(newConfig){
 
 	}
 }
-function readConfig(){
-	return function(cb){
-		jf.readFile(configPath,function(err,result){
-			if(err){
-				cb(err,null);
-			}
-			else{
-				cb(null,result)
-			}
-		});
-	}
+
+
+function readConfigSync(){
+	return jf.readFileSync(configPath);
 }
