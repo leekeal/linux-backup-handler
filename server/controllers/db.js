@@ -1,3 +1,4 @@
+var merge = require('merge');
 module.exports = function(app){
 
 	var ctrl = '/dbs';
@@ -13,6 +14,7 @@ module.exports = function(app){
 		var config = this.config;
 		var databases = config.databases;
 		var id = getMaxIndex(databases) + 1;
+
 		var db = {
 			id:id,
 			title:'jcys120.com主站',
@@ -25,6 +27,7 @@ module.exports = function(app){
 			remoteFolder:'./backup/database/',
 			emailTO:'',
 		};
+
 		databases[id] = db;
 		try{
 			yield this.config.save(config);
@@ -34,6 +37,16 @@ module.exports = function(app){
 		}
 		this.body = config
 	});
+
+	app.put('/db/:id',function *(){
+		console.log(this.post)
+		var id = this.params.id;
+		var database = this.config.databases[id];
+		var newDatabase = this.post;
+		merge(database,newDatabase);
+		yield this.config.save()
+		this.body = database;
+	})
 
 }
 

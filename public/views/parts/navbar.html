@@ -1,11 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link rel="stylesheet" type="text/css" href="css/bootstrap/css/bootstrap.css">
-	<title>navbar</title>
-</head>
-<body>
+<div ng-controller = 'navbarCtrl'>
 	<nav class="navbar navbar-inverse" role="navigation">
 		<div class="container">
 			<ul class="nav navbar-nav" role="tablist">
@@ -13,7 +6,7 @@
 				<li role="presentation"><a href="#">Profile</a></li>
 				<li role="presentation"><a href="#">Messages</a></li>
 			</ul>
+			<p class="col-xs-7 text-muted">{{credentials.username}}</p>
 		</div>
 	</nav>
-</body>
-</html>
+</div>

@@ -6,40 +6,33 @@ module.exports = function(app){
 
 
 	/* Initialize the system configuration*/
-	app.get('/install',function *(next){
-		var config = {
-			url:'http://127.0.0.1:3000',
-			mysqldumpPath : '/Applications/MAMP/Library/bin/mysqldump ',
-			databases:{},
-			administrator:'test',
-			password:'test',
-		};
-		var email = {
-			service:'gmail',
-			username:'leeke.priv',
-			password:'ls20080813',
-			address:'leeke.priv@gmail.com'
-		}
-		config.email = email;
-
+	app.post('/install',function *(next){		
 		var exists = yield this.config.exists();
 		if(exists){
-			return this.body = {error:'Configuration file already exists'};
+				   this.status = 500;
+			return this.body = {installed:'Configuration file already exists'};
 		}
 
-		config.installed = true;
-		yield this.config.save(config);
-
-
-		this.body = config;
+		var post = this.post;
+		if(post.url && post.mysqldumpPath && post.administrator && post.password){
+			this.config.installed = true;
+			yield this.config.save(post);
+			this.body = this.config;
+		}else{
+			this.body = {error:'The data is incomplete'};
+		}
 	});
 
 	app.put('/config',function *(){
 		var  newConfig = this.post;
-		var config = this.config;
 
-		merge(config,newConfig);
-		this.body = config;
+		merge(this.config,newConfig);
+		yield this.config.save()
+		this.body = this.config;
+	})
+
+	app.get('/config',function *(){
+		this.body = this.config;
 	})
 }
 

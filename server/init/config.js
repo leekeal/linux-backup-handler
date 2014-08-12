@@ -31,6 +31,7 @@ module.exports = function(app){
 			if(this.path == '/install'){
 				yield next
 			}else{
+				this.status = 500;
 				this.body = {install:'Configuration file does not exist or app is not installed.'}
 			}
 		}else{
@@ -51,14 +52,14 @@ function exists(){
 	}
 }
 
-function saveConfig(newConfig){
+function saveConfig(){
 	return function(cb){
-		jf.writeFile(configPath,newConfig,function(err){
+		jf.writeFile(configPath,config,function(err){
 			if(err){
 				cb(err,null);
 			}
 			else{
-				merge(config,newConfig);/*合并新的config到原始config对象中*/
+				//merge(config,newConfig);/*合并新的config到原始config对象中*/
 				cb(null,true);
 			}
 		})

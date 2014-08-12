@@ -15,7 +15,7 @@ module.exports = function(app){
 		if(!this.session.user){
 			this.body = {error:'offline'}
 		}else{
-			this.body = 'online'
+			this.body = {online:'online',username:this.session.user};
 		}
 	})
 

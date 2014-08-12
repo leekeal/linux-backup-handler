@@ -1,8 +1,7 @@
 var nodemailer = require('nodemailer');
 module.exports = function(app){
 
-	var email = app.config.email;
-
+	var email = app.config.email || {};
 	var transporter = nodemailer.createTransport({
 		service: email.service,
 		auth: {

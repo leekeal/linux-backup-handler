@@ -41,6 +41,7 @@ module.exports = function(grunt) {
             files: [
             '<%= app.dev %>/**/*.css',
             '<%= app.dev %>/app.all.js',
+            '<%= app.dev %>/views/**/*'
             ]
         },
     },

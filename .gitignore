@@ -1,3 +1,4 @@
 server/config.json
+server/config-bk.json
 backup/*
 documents/*

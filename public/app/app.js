@@ -5,10 +5,3 @@ window.appCtrls = angular.module('appCtrls', []);
 
 
 
-
-
-
-
-
-
-

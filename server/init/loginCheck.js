@@ -4,7 +4,7 @@ module.exports = function(app){
 			yield next;
 		}
 		else{
-			this.body = {"error":"offline"};
+			this.body = {"offline":"offline"};
 		}
 
 	})
