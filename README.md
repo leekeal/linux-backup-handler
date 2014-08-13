@@ -5,3 +5,6 @@
 #启动grunt开发工具
 
 	grunt dev
+
+#开发中合并启动方式
+	./dev

@@ -8,6 +8,11 @@ app.keys = ['linux_backup_handler', 'asdfijdlkfjaskdljfwerjdafsf'];
 
 
 
+var socketIo = {};
+app.use(function *(next){
+	this.socketIo = socketIo;
+	yield next;
+})
 app.use(serve('./public'));
 require('./server/init/config')(app);
 require('./server/init/mail')(app);
@@ -17,11 +22,22 @@ require('./server/init/loginCheck')(app);
 app.use(router(app));
 /*-------------- Behind of router --------------------*/
 
+var server = require('http').Server(app.callback()),
+
+io = require('socket.io')(server);
+
+io.on('connection', function(newSocket){
+	socketIo = newSocket;
+	socketIo.emit('connected', 'Socket connect succeed');
+});
+
+
 require('./server/controllers/user')(app);
 require('./server/controllers/backup')(app);
 require('./server/controllers/configuration')(app);
 require('./server/controllers/db')(app);
-app.listen(port);
+server.listen(port);
+console.log(port)
 console.info('Server startup  was successful. \nhttp://127.0.0.1:'+port)
 
 

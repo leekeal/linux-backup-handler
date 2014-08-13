@@ -1,6 +1,5 @@
 module.exports = function(app){
 	app.post('/login',function *(next){
-		console.log(this.post)
 		var username = this.post.username;
 		var password = this.post.password;
 		if(username === this.config.administrator && password === this.config.password){
@@ -13,6 +12,7 @@ module.exports = function(app){
 	app.get('/status',function *(next){
 		var configExists = yield this.config.exists();
 		if(!this.session.user){
+			this.status = 403;
 			this.body = {error:'offline'}
 		}else{
 			this.body = {online:'online',username:this.session.user};
@@ -21,6 +21,7 @@ module.exports = function(app){
 
 	app.get('/logout',function *(next){
 		this.session = null;
+		this.status = 403;
 		this.body = 'logout succeed'
 	})
 }

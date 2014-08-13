@@ -4,6 +4,7 @@ module.exports = function(app){
 			yield next;
 		}
 		else{
+			this.status = 403;
 			this.body = {"offline":"offline"};
 		}
 

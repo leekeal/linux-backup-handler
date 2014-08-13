@@ -1,12 +1,18 @@
 <div ng-controller = 'navbarCtrl'>
 	<nav class="navbar navbar-inverse" role="navigation">
 		<div class="container">
-			<ul class="nav navbar-nav" role="tablist">
-				<li role="presentation"><a href="#">Home</a></li>
-				<li role="presentation"><a href="#">Profile</a></li>
-				<li role="presentation"><a href="#">Messages</a></li>
-			</ul>
-			<p class="col-xs-7 text-muted">{{credentials.username}}</p>
+			<div class="row">
+				<div class="col-xs-12">
+					<ul class="nav navbar-nav" role="tablist">
+						<li role="presentation"><a href="/">Home</a></li>
+						<li role="presentation"><a href="#/databases">Database</a></li>
+						<li role="presentation"><a href="#/config/">System Settings</a></li>
+					</ul>
+					<p ng-if = "credentials.username" class="text-right text-primary">{{credentials.username}}
+						<i class="fa fa-power-off" ng-click="logout()"></i>
+					</p>
+				</div>
+			</div>
 		</div>
 	</nav>
 </div>

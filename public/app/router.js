@@ -15,9 +15,31 @@ app.config(['$routeProvider',
 			controller:'installCtrl'
 		});
 
+
+
 		$routeProvider.when('/config', {
 			templateUrl: 'views/config.html',
 			controller:'configCtrl'
+		});
+
+		$routeProvider.when('/databases', {
+			templateUrl: 'views/databases.html',
+			controller:'databasesCtrl'
+		});
+
+		$routeProvider.when('/database-add', {
+			templateUrl: 'views/database-form.html',
+			controller:'database-addCtrl'
+		});
+
+		$routeProvider.when('/databases/:id', {
+			templateUrl: 'views/database-form.html',
+			controller:'database-editCtrl'
+		});
+
+		$routeProvider.when('/test', {
+			templateUrl: 'views/test.html',
+			controller:'testCtrl'
 		});
 
 		$routeProvider.otherwise({

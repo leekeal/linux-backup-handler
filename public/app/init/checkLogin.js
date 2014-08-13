@@ -3,6 +3,8 @@ app.run(['$rootScope', '$window', '$location', '$http', function ($rootScope, $w
 
 	var credentials = $rootScope.credentials = {};
 
+
+	var running = false;
 	/*程序启动判断用户是否登录*/
 	var url = '/status';
 	var getStatus = $http.get(url);
@@ -16,16 +18,18 @@ app.run(['$rootScope', '$window', '$location', '$http', function ($rootScope, $w
 				$location.path('/')
 			}
 		}
+		running = true;
 	});
 
 	/*每次重新路由时候判断用户是否登录*/
 	$rootScope.$on('$routeChangeStart', function(event,next){
-		if(!credentials.username){
-			$location.path('login')
-		}else if($location.path() == '/login'){
-			$location.path('/')
+		if(running){ /*启动的时候从服务器获取登录状态，不用用户名存在与否判断*/
+			if(!credentials.username && $location.path() != '/install'){
+				$location.path('login')
+			}else if($location.path() == '/login'){
+				$location.path('/')
+			}
 		}
-
 	});
 
 

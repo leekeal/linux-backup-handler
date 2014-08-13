@@ -1,0 +1,63 @@
+
+<div class="row">
+	<div class="col-xs-10">
+		<h3 class="text-center">Databases</h3>
+	</div>
+</div>
+<div class="row">
+	<div class="col-xs-12">
+		<table class="table text-center">
+			<tr class="btn-primary">
+				<td></td>
+				<td></td>
+				<td>Title</td>
+				<td>Database</td>
+				<td>Setting</td>
+				<td>backup</td>
+				<td>Status</td>
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			</tr>
+			<tr ng-repeat="db in dbs">
+				<td></td>
+				<td></td>
+				<td>{{db.title}}</td>
+				<td>{{db.host}}</td>
+				<td>
+					<a href="#/databases/{{db.id}}"><i class="fa fa-pencil-square-o  fa-lg"></i></a>
+				</td>
+				<td >
+					<button ng-disabled="db.disabled" type="button" class="btn btn-default btn-sm" ng-click = 'events.backup(db.id)'>backup</button>
+				</td>
+				<td>
+					　&nbsp;
+					{{db.working.status}}
+				</td>
+				<td>
+					{{ db.working.size/1024/1024 | number : 2}} 
+					<span ng-if = 'db.working.size'>MB</span>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<!-- <div class="col-xs-3" ng-controller = "database-statusCtrl">
+		<div class="panel panel-info">
+			<div class="panel-heading text-center">
+				{{currentDb.title}}
+			</div>
+			<div class="panel-body">
+				database size:
+			</div>
+			<div class="panel-body">
+				Status:
+			</div>
+			<div class="panel-body">
+				sql file size (MB) : {{ currentDb.working.size/1024/1024 | number : 2}}
+			</div>
+			<div class="panel-body">
+				uploaded size:
+			</div>
+		</div>
+	</div> -->
+</div>
+
+

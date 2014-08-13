@@ -6,8 +6,10 @@ window.appCtrls = angular.module('appCtrls', []);
 
 
 
-
-
+window.socket = io('http://localhost');
+socket.on('connected', function (data) {
+	console.log(data);
+});
 
 })();
 
@@ -18,6 +20,8 @@ app.run(['$rootScope', '$window', '$location', '$http', function ($rootScope, $w
 
 	var credentials = $rootScope.credentials = {};
 
+
+	var running = false;
 	/*程序启动判断用户是否登录*/
 	var url = '/status';
 	var getStatus = $http.get(url);
@@ -31,16 +35,18 @@ app.run(['$rootScope', '$window', '$location', '$http', function ($rootScope, $w
 				$location.path('/')
 			}
 		}
+		running = true;
 	});
 
 	/*每次重新路由时候判断用户是否登录*/
 	$rootScope.$on('$routeChangeStart', function(event,next){
-		if(!credentials.username){
-			$location.path('login')
-		}else if($location.path() == '/login'){
-			$location.path('/')
+		if(running){ /*启动的时候从服务器获取登录状态，不用用户名存在与否判断*/
+			if(!credentials.username && $location.path() != '/install'){
+				$location.path('login')
+			}else if($location.path() == '/login'){
+				$location.path('/')
+			}
 		}
-
 	});
 
 
@@ -60,12 +66,19 @@ app.run(['$rootScope', '$window', '$location', '$http', function ($rootScope, $w
 app.factory('installedChecker', ['$q','$location', function($q,$location) {
 	return{
 		responseError: function(rejection) {
+
+
+
+	
 			if(rejection.status == 500 && rejection.data.install){
+			
 				$location.path('install')
 			}
 			else if(rejection.status == 500 && rejection.data.installed){
 				$location.path('/')
 				console.log('installed');
+			}else if(rejection.status == 403){
+				$location.path('login')
 			}
 			return $q.reject(rejection);
 		}
@@ -81,15 +94,146 @@ app.config(['$httpProvider', function($httpProvider) {
 (function() {
 
 appCtrls.controller('configCtrl', ['$scope', '$http','$location',function($scope, $http,$location) {
+	var model = $scope.model = {};
 	var data = $http.get("/config");
 	data.success(function(data){
-		console.log(data);
-		$scope.url = data.url;
-		$scope.mysqldumpPath  = data.mysqldumpPath;
-		$scope.administrator =  data.administrator;
-		$scope.password = data.password;
-		$scope.email = data.email;
+		model.url = data.url
+		model.mysqldumpPath  = data.mysqldumpPath;
+		model.administrator =  data.administrator;
+		model.password = data.password;
+		model.email = data.email;
 	})
+
+	$scope.edit = function(){
+		$http.put("/config",model).success(function(data){
+			if(data.error){
+				$scope.errorMsg = data.error;
+			}
+			else{
+				$scope.successMsg = "success";
+			}
+		})
+	}
+}]);
+
+})();
+
+(function() {
+
+appCtrls.controller('database-addCtrl', ['$scope', '$http','$location',function($scope, $http,$location) {
+	var model = $scope.model = {};
+	$scope.events = {};
+
+	$scope.buttonName = "add";
+	$scope.pageTitle = "Add datebase"
+	$scope.events.submit= function(){
+		$http.post("/db",model).success(function(data){
+			if(data.error){
+				$scope.errorMsg = data.error;
+			}
+			else{
+				$location.path("databases");
+			}
+		})
+	}
+}]);
+
+})();
+
+(function() {
+
+appCtrls.controller('database-editCtrl', ['$scope', '$http','$location','$routeParams',function($scope, $http,$location,$routeParams) {
+	var model = $scope.model = {};
+	$scope.events = {};
+
+	$scope.pageTitle = 'database'
+	$scope.buttonName = 'edit';
+	var id = model.id = $routeParams.id;
+	var getDatabase = $http.get('/dbs/'+id);
+	getDatabase.success(function(data){
+		/*更新页面的值，只能单独更新每个对象的属性，不能直接更新整体对象。*/
+		model.title = data.title;
+		model.host = data.host;
+		model.name = data.name;
+		model.username = data.username;
+		model.password = data.password;
+		model.folder = data.folder;
+		model.remote = {};
+		model.remote.on = data.remote.on;
+		model.remote.folder = data.remote.folder;
+		model.emailTo = data.emailTo;
+	})
+
+	$scope.events.submit = function(){
+		$http.put("/db",model).success(function(data){
+			if(data.error){
+				console.log(data.error);
+			}
+			else{
+				console.log(data);
+			}
+		})
+	}
+	
+
+}]);
+
+})();
+
+(function() {
+
+appCtrls.controller('database-statusCtrl',['$scope',function($scope){
+	
+}])
+
+})();
+
+(function() {
+
+appCtrls.controller('databasesCtrl', ['$scope', '$http','$location',function($scope, $http,$location) {
+	$scope.events = {};
+	$scope.dbs = {}
+
+	/*获取数据库列表*/
+	var getDatabases = $http.get("/dbs");
+	getDatabases.success(function(data){
+		$scope.dbs = data;
+	})
+
+
+	/*订阅数据库备份状态*/
+	socket.on('database', function (data) {
+		var db = $scope.dbs[data.id];
+		if(data.end){
+			db.working.status = 'done';
+			db.disabled = false
+		}else{
+			db.working = data.status;
+		}
+		$scope.$apply();/*手动刷新$scoope*/
+	});
+
+
+	/*请求备份*/
+	$scope.events.backup = function(id){
+		var db = $scope.dbs[id];
+
+		$http.get("db-backup/" + id).success(function(status){
+			if(status.error){
+				console.log(status.error);
+			}else{
+				db.working = status;
+				db.disabled = true;
+			}
+		})
+	};
+
+
+
+	// $scope.events.status = function(id){
+	// 	$scope.currentDb = $scope.dbs[id];
+	// }
+
 }]);
 
 })();
@@ -112,23 +256,14 @@ appCtrls.controller('indexCtrl', ['$scope', '$http',function($scope,$http){
 
 appCtrls.controller('installCtrl', ['$scope', '$http','$location',function($scope,$http,$location){
 	$scope.currentView = 'msg';
-	$scope.url = 'http://' + $location.$$host + ':' + $location.$$port;
+	var model = $scope.model = {};
+	model.url = 'http://' + $location.$$host + ':' + $location.$$port;
 	$scope.toInstall = function(){
 		$scope.currentView = 'install';
 	}
 
 	$scope.install = function(){
-		
-		var data = {
-			url : $scope.url,
-			mysqldumpPath : $scope.mysqldumpPath,
-			administrator : $scope.administrator,
-			password : $scope.password,
-			email:$scope.email
-		}
-		console.log(data)
-		var postToInstall = $http.post("/install",data);
-
+		var postToInstall = $http.post("/install",model);
 		postToInstall.success(function(data){
 			if(data.error){
 				$scope.errorMsg = data.error;
@@ -146,18 +281,10 @@ appCtrls.controller('installCtrl', ['$scope', '$http','$location',function($scop
 (function() {
 
 appCtrls.controller('loginCtrl', ['$scope','$rootScope', '$http','$location',function($scope,$rootScope,$http,$location) {
-
-	console.log('login')
-	
+	var model = $scope.model = {};
 	$scope.login = function(){
-		var data = {
-			"username" : $scope.username ,
-			"password" : $scope.password
-		}
-
-		
 		/*post发送数据*/
-		var login = $http.post("/login",data);
+		var login = $http.post("/login",model);
 		
 		/*发送成功*/
 		login.success(function(data){
@@ -168,7 +295,6 @@ appCtrls.controller('loginCtrl', ['$scope','$rootScope', '$http','$location',fun
 			else{
 				$rootScope.credentials.username = data.username;
 				$location.path('/');
-				console.log($rootScope.credentials)
 				console.log('login success')
 			}	
 
@@ -188,9 +314,13 @@ appCtrls.controller('loginCtrl', ['$scope','$rootScope', '$http','$location',fun
 
 (function() {
 
-appCtrls.controller('navbarCtrl', ['$scope','$http','$location',function($scope,$http,$location) {
-	console.log('navbar')
-	// $scope.username =  $rootScope.credentials.username;
+appCtrls.controller('navbarCtrl', ['$scope','$rootScope','$http','$location',function($scope,$rootScope,$http,$location) {
+
+	$scope.logout = function(){
+		$http.get("/logout").error(function(error){
+			$rootScope.credentials = null;
+		})
+	}
 
 }]);
 
@@ -198,9 +328,30 @@ appCtrls.controller('navbarCtrl', ['$scope','$http','$location',function($scope,
 
 (function() {
 
-appCtrls.controller('testCtrl', ['$scope', '$http','System',function($scope, $http,System) {
+appCtrls.controller('testCtrl', ['$scope', '$http',function($scope, $http) {
+	$scope.events = {}
 
-	console.log(System)
+
+
+
+	socket.on('database', function (data) {
+		console.log(data);
+	});
+
+
+
+
+	$scope.events.test = function(){
+		console.log('test click')
+		$http.get('db-backup/2').success(function(data){
+			if(data.error){
+				console.error(data.error)
+				return
+			}
+			console.log(data)
+
+		})
+	}
 
 }]);
 
@@ -225,9 +376,31 @@ app.config(['$routeProvider',
 			controller:'installCtrl'
 		});
 
+
+
 		$routeProvider.when('/config', {
 			templateUrl: 'views/config.html',
 			controller:'configCtrl'
+		});
+
+		$routeProvider.when('/databases', {
+			templateUrl: 'views/databases.html',
+			controller:'databasesCtrl'
+		});
+
+		$routeProvider.when('/database-add', {
+			templateUrl: 'views/database-form.html',
+			controller:'database-addCtrl'
+		});
+
+		$routeProvider.when('/databases/:id', {
+			templateUrl: 'views/database-form.html',
+			controller:'database-editCtrl'
+		});
+
+		$routeProvider.when('/test', {
+			templateUrl: 'views/test.html',
+			controller:'testCtrl'
 		});
 
 		$routeProvider.otherwise({

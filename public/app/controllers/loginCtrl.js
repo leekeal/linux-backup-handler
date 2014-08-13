@@ -1,16 +1,8 @@
 appCtrls.controller('loginCtrl', ['$scope','$rootScope', '$http','$location',function($scope,$rootScope,$http,$location) {
-
-	console.log('login')
-	
+	var model = $scope.model = {};
 	$scope.login = function(){
-		var data = {
-			"username" : $scope.username ,
-			"password" : $scope.password
-		}
-
-		
 		/*post发送数据*/
-		var login = $http.post("/login",data);
+		var login = $http.post("/login",model);
 		
 		/*发送成功*/
 		login.success(function(data){
@@ -21,7 +13,6 @@ appCtrls.controller('loginCtrl', ['$scope','$rootScope', '$http','$location',fun
 			else{
 				$rootScope.credentials.username = data.username;
 				$location.path('/');
-				console.log($rootScope.credentials)
 				console.log('login success')
 			}	
 

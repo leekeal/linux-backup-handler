@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+
+var child_process = require('child_process')
+var exec = child_process.exec;
+var port = 3000;
+var server = exec('PORT=' + port+ ' node-dev --harmony app.js',function(err,data){
+	if(err){
+		console.error(err)
+	}
+});
+var browser = false;
+server.stdout.on('data',function(data){
+
+
+	console.log(data)
+	if(!browser&&data == port){
+		browser = true;
+		// exec('open http://127.0.0.1:'+port,function(err,data){
+		// 	if(err){
+		// 		console.log('启动浏览器失败');
+		// 	}
+		// })
+	}
+})
+
+server.stderr.on('data',function(data){
+
+	console.error(data)
+})
+
+
+var grunt = exec('grunt dev',function(err,data){
+	if(err){
+		console.error(err)
+	}
+});
+
+grunt.stdout.on('data',function(data){
+	console.log('-------Grunt log-------------')
+	console.log(data)
+})
+
+grunt.stderr.on('data',function(data){
+	console.log('-------Grunt log-------------')
+	console.error(data)
+})

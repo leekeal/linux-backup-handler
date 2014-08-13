@@ -13,6 +13,7 @@ module.exports = function(app){
 		config =  readConfigSync();
 		config.installed = true;
 	}catch(err){
+		config.databases = {};/*Set databases obj*/
 		config.installed = false;
 	}
 

@@ -6,17 +6,19 @@ module.exports = function(app){
 
 
 	/* Initialize the system configuration*/
-	app.post('/install',function *(next){		
+	app.post('/install',function *(next){
 		var exists = yield this.config.exists();
 		if(exists){
-				   this.status = 500;
-			return this.body = {installed:'Configuration file already exists'};
+				   // this.status = 500;
+			return this.body = {installed:'Configuration file already exists',error:'Configuration file already exists'};
 		}
 
-		var post = this.post;
-		if(post.url && post.mysqldumpPath && post.administrator && post.password){
+		var newConfig = this.post;
+		if(newConfig.url && newConfig.mysqldumpPath && newConfig.administrator && newConfig.password){
+			
+			merge(this.config,newConfig);/*合并配置文件对象*/
 			this.config.installed = true;
-			yield this.config.save(post);
+			yield this.config.save();
 			this.body = this.config;
 		}else{
 			this.body = {error:'The data is incomplete'};
