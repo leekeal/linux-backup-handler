@@ -4,7 +4,7 @@ var ms2date = require('ms2date');
 var Q = require('q');
 var child_process = require('child_process');
 var exec = Q.denodeify(child_process.exec);
-
+var path = require('path');
 
 var fs = require('fs');
 
@@ -46,7 +46,8 @@ function tar(origin,options){
 			status:status,
 			time:ms2date(time),
 			originFile:origin,
-			fileName:target,
+			filePath:target,
+			filename:path.basename(target),
 			size:size,
 		}
 		deferred.resolve(results);

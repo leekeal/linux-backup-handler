@@ -10,17 +10,7 @@ var server = exec('PORT=' + port+ ' node-dev --debug --harmony app.js',function(
 });
 var browser = false;
 server.stdout.on('data',function(data){
-
-
 	console.log(data)
-	if(!browser&&data == port){
-		browser = true;
-		// exec('open http://127.0.0.1:'+port,function(err,data){
-		// 	if(err){
-		// 		console.log('启动浏览器失败');
-		// 	}
-		// })
-	}
 })
 
 server.stderr.on('data',function(data){

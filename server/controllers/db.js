@@ -3,9 +3,8 @@ var mysqlHandler = require('../extracts/mysqlHandler');
 var tarHandler = require('../extracts/tarHandler');
 var fs = require('fs');
 var q = require('q');
-var QFTPS = require('../extracts/ftps');
 var Mail = require('../extracts/mail');
-
+var generalTask = require('../extracts/generalTask');
 module.exports = function(app){
 
 	var ctrl = '/dbs';
@@ -77,16 +76,11 @@ module.exports = function(app){
 		.then(compressSql)/*compress sql to tar.gz*/
 		.then(deleteSqlFile)
 		.then(function(){
-			if(dbConfig.remote.on){
-				return uploadToRemote()
-			}
+			return generalTask.uploadAndEmail(ctx.config,dbConfig,report,nofityStatus);
 		})
-		.then(function(uploadReport){
-			report.upload = uploadReport
-			return sendEmail();
-		})
-		.then(function(mailRes){
-			console.log(mailRes)
+		.then(function(){
+			console.log(report)
+			ctx.io.sockets.emit('database',{id:id,status:'done',end:true,report:report})
 		})
 		.catch(function(err){
 			console.error(err)
@@ -120,34 +114,6 @@ module.exports = function(app){
 			return q.nfcall(fs.unlink, compressResult.originFile);
 		}
 
-
-
-		function uploadToRemote(){
-			console.log('uploadToRemote')
-			var remoteConfig = ctx.config.remote;
-			var qftps = new QFTPS(remoteConfig);
-			var uploadTask = qftps.put(report.compress.fileName,dbConfig.remote.folder);
-			uploadTask.progress(function(status){
-				ctx.io.sockets.emit('database',{id:id,status:status})
-			})
-			return uploadTask;
-		}
-
-		function sendEmail(){
-			if(!dbConfig.emailTo){
-				console.log('Email notification function did not open it');
-				return 0;
-			}
-
-			var mail = new Mail(ctx.config.email);
-			var options = {
-				from:'Linux backup handler',
-				to:dbConfig.emailTo,
-				subject:'Database backup report',
-				text:'text'
-			}
-			return mail.send(options)
-		}
 
 		function nofityStatus(status){
 			console.log(status)

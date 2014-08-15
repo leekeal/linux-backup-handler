@@ -24,27 +24,3 @@ Mail.prototype.send = function(options){
 	})
 	return deferred.promise;
 }
-
-
-
-
-
-
-
-	// function sendMail(to,subject,text,cb){
-	// 	transporter.sendMail({
-	// 		from: email.address,
-	// 		to: to,
-	// 		subject: subject,
-	// 		text: text
-	// 	},function(err,info){
-	// 		console.log(info)
-	// 		if(cb){
-	// 			cb(err,info)
-	// 		}
-	// 	});
-	// }
-	// app.use(function *(next){
-	// 	this.sendMail = sendMail;/*set the email handler into the context*/
-	// 	yield next;
-	// })

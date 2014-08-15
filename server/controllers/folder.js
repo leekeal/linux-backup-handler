@@ -3,6 +3,7 @@ var tarHandler = require('../extracts/tarHandler');
 var q = require('q');
 var path = require('path');
 var dateFormat = require('dateformat');
+var generalTask = require('../extracts/generalTask');
 module.exports = function(app){
 
 	app.post('/folder',function *(next){
@@ -62,10 +63,15 @@ module.exports = function(app){
 
 		/* start to backup*/
 		var report = {};
-		q.fcall(archiveFolder)
-		.then(function(archiveReport){
-			console.log(archiveReport)
-			ctx.io.sockets.emit('folder',{id:id,status:'done',end:true,report:archiveReport})
+		q.fcall(compressFolder)
+		.then(function(compressReport){
+			report.compress = compressReport;
+			return generalTask.uploadAndEmail(ctx.config,folderConfig,report,nofityStatus);
+			
+		})
+		.then(function(){
+			console.log(report)
+			ctx.io.sockets.emit('folder',{id:id,status:'done',end:true,report:report})
 		})
 		.catch(function(err){
 			console.error(err)
@@ -73,18 +79,18 @@ module.exports = function(app){
 
 
 
-		function archiveFolder(){
+		function compressFolder(){
 			var time = dateFormat(new Date(), "yyyymmdd-HHMMss");
 			var fileName = path.basename(folderConfig.folder) + '-' + time + '.tar';
 			var targetPath = path.join(folderConfig.local,fileName);
-			var archiveTask = tarHandler(folderConfig.folder,
+			var compressTask = tarHandler(folderConfig.folder,
 			{
 				target:targetPath ,
 				args:'cf',
 				delay:500,
 			});
-			archiveTask.progress(nofityStatus);
-			return archiveTask;
+			compressTask.progress(nofityStatus);
+			return compressTask;
 		}
 
 		function nofityStatus(status){

@@ -38,7 +38,6 @@ require('./server/controllers/backup')(app);
 require('./server/controllers/configuration')(app);
 require('./server/controllers/db')(app);
 server.listen(port);
-console.log(port)
 console.info('Server startup  was successful. \nhttp://127.0.0.1:'+port)
 
 

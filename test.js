@@ -88,17 +88,36 @@ var co_test = thunkify(test);
 // 	console.log(data)
 // })
 
-var count = 0;
+// var count = 0;
 
-async.whilst(
-    function () { return count < 5; },
-    function (callback) {
-    	console.log(count)
-        count++;
-        setTimeout(callback, 1000);
-    },
-    function (err) {
-        // 5 seconds have passed
-    }
-);
+// async.whilst(
+//     function () { return count < 5; },
+//     function (callback) {
+//     	console.log(count)
+//         count++;
+//         setTimeout(callback, 1000);
+//     },
+//     function (err) {
+//         // 5 seconds have passed
+//     }
+// );
+
+
+var FTPS = require('ftps');
+try{
+    var ftps = new FTPS({
+      host: 'fwind.me', 
+      username: 'leeke', 
+      password: 'ls20080813', 
+      protocol: 'ftp', 
+
+  });
+}catch(err){
+    console.error(err)
+}
+
+ftps.put('./test.js', '~/backup/').exec(function(err,data){
+    console.log('test')
+    console.log(data)
+})
 

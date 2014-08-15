@@ -104,17 +104,3 @@ QFTPS.prototype.du = function(path){
 }
 
 
-
-
-
-// var qftps = new QFTPS();
-
-
-// qftps.put('/Users/leeke/Desktop/test.pdf','~/backup/')
-// .then(function(report){
-// 	console.log(report)
-// })
-// .fail(console.error)
-// .progress(console.log)
-
-
