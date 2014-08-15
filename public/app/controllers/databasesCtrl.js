@@ -1,4 +1,4 @@
-appCtrls.controller('databasesCtrl', ['$scope', '$http','$location',function($scope, $http,$location) {
+appCtrls.controller('databasesCtrl', ['$scope', '$http','$location','$socket',function($scope, $http,$location,$socket) {
 	$scope.events = {};
 	$scope.dbs = {}
 
@@ -9,13 +9,14 @@ appCtrls.controller('databasesCtrl', ['$scope', '$http','$location',function($sc
 	})
 
 
-	/*订阅数据库备份状态*/
-	socket.on('database', function (data) {
-		var db = $scope.dbs[data.id];
+	// /*订阅数据库备份状态*/
+	$socket.onOnce('database', function (data) {
+		var db = $scope.dbs[data.id] || {};
 		if(data.end){
 			db.working.status = 'done';
 			db.disabled = false
 		}else{
+			db.disabled = true;
 			db.working = data.status;
 		}
 		$scope.$apply();/*手动刷新$scoope*/

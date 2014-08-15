@@ -6,10 +6,9 @@ window.appCtrls = angular.module('appCtrls', []);
 
 
 
-window.socket = io('http://localhost');
-socket.on('connected', function (data) {
-	console.log(data);
-});
+
+
+
 
 })();
 
@@ -93,19 +92,62 @@ app.config(['$httpProvider', function($httpProvider) {
 
 (function() {
 
+app.service('$socket',function(){
+
+	var socket = init();
+	var events = this.events = {};
+
+
+
+
+	this.onOnce = function(name,cb){
+		if(events[name]){
+			delete events[name]
+			events[name] = cb;
+		}else{
+			events[name] = cb;
+			socket.on(name,function(result){
+				events[name](result)
+			});
+		}
+	}
+
+
+
+
+
+});
+
+
+function init(){
+	var socket = io('http://localhost');
+	socket.on('connected', function (data) {
+		console.log(data);
+	});
+	return socket;
+}
+
+/*路由发生改变*/
+app.run(['$socket', function ($socket) {  
+	console.log($socket)
+	
+
+}]);
+
+})();
+
+(function() {
+
 appCtrls.controller('configCtrl', ['$scope', '$http','$location',function($scope, $http,$location) {
-	var model = $scope.model = {};
 	var data = $http.get("/config");
 	data.success(function(data){
-		model.url = data.url
-		model.mysqldumpPath  = data.mysqldumpPath;
-		model.administrator =  data.administrator;
-		model.password = data.password;
-		model.email = data.email;
+		// model = data;/*这种写法，视图不会更新*/
+		$scope.model = data
 	})
 
 	$scope.edit = function(){
-		$http.put("/config",model).success(function(data){
+		$scope.model.email.service = 'gmail'
+		$http.put("/config",$scope.model).success(function(data){
 			if(data.error){
 				$scope.errorMsg = data.error;
 			}
@@ -190,7 +232,7 @@ appCtrls.controller('database-statusCtrl',['$scope',function($scope){
 
 (function() {
 
-appCtrls.controller('databasesCtrl', ['$scope', '$http','$location',function($scope, $http,$location) {
+appCtrls.controller('databasesCtrl', ['$scope', '$http','$location','$socket',function($scope, $http,$location,$socket) {
 	$scope.events = {};
 	$scope.dbs = {}
 
@@ -201,13 +243,14 @@ appCtrls.controller('databasesCtrl', ['$scope', '$http','$location',function($sc
 	})
 
 
-	/*订阅数据库备份状态*/
-	socket.on('database', function (data) {
-		var db = $scope.dbs[data.id];
+	// /*订阅数据库备份状态*/
+	$socket.onOnce('database', function (data) {
+		var db = $scope.dbs[data.id] || {};
 		if(data.end){
 			db.working.status = 'done';
 			db.disabled = false
 		}else{
+			db.disabled = true;
 			db.working = data.status;
 		}
 		$scope.$apply();/*手动刷新$scoope*/
@@ -233,6 +276,109 @@ appCtrls.controller('databasesCtrl', ['$scope', '$http','$location',function($sc
 	// $scope.events.status = function(id){
 	// 	$scope.currentDb = $scope.dbs[id];
 	// }
+
+}]);
+
+})();
+
+(function() {
+
+appCtrls.controller('folder-addCtrl', ['$scope', '$http','$location',function($scope, $http,$location) {
+	var model = $scope.model = {};
+	$scope.events = {};
+
+	$scope.buttonName = "add";
+	$scope.pageTitle = "Add folder"
+	$scope.events.submit= function(){
+		$http.post("/folder",model).success(function(data){
+			if(data.error){
+				console.log(data.error);
+				$scope.errorMsg = data.error;
+			}
+			else{
+				console.log(data);
+			}
+		})
+	}
+}]);
+
+})();
+
+(function() {
+
+appCtrls.controller('folder-editCtrl', ['$scope', '$http','$location','$routeParams',function($scope, $http,$location,$routeParams) {
+	var model = $scope.model = {};
+	$scope.events = {};
+
+	$scope.pageTitle = 'Folder setting'
+	$scope.buttonName = 'edit';
+	var id = model.id = $routeParams.id;
+	var getDatabase = $http.get('/folders/'+id);
+	getDatabase.success(function(data){
+		/*更新页面的值，只能单独更新每个对象的属性，不能直接更新整体对象。*/
+		model.title = data.title;
+		model.folder = data.folder;
+		model.local = data.local;
+		model.remote = {};
+		model.remote.on = data.remote.on;
+		model.remote.folder = data.remote.folder;
+		model.emailTo = data.emailTo;
+	})
+
+	$scope.events.submit = function(){
+		$http.put("/folder",model).success(function(data){
+			if(data.error){
+				console.log(data.error);
+			}
+			else{
+				console.log(data);
+			}
+		})
+	}
+}]);
+
+})();
+
+(function() {
+
+appCtrls.controller('foldersCtrl', ['$scope', '$http','$location','$socket',function($scope, $http,$location,$socket) {
+	$scope.events = {};
+	$scope.folders = {}
+
+	var getDatabases = $http.get("/folders");
+	getDatabases.success(function(data){
+		console.log(data);
+		$scope.folders = data;
+	})
+
+
+	// /监听文件夹备份状态*/
+
+	$socket.onOnce('folder',function(result){
+		var folder = $scope.folders[result.id] || {};
+		if(result.end){
+			folder.working.status = 'done';
+			folder.disabled = false
+		}else{
+			folder.disabled = true;
+			folder.working = result.status;
+		}
+		$scope.$apply();/*手动刷新$scoope*/
+	})
+
+
+	$scope.events.backup = function(id){
+		var folder = $scope.folders[id];
+		$http.get('folder-backup/' + id).success(function(status){
+			if(status.error){
+				console.log(status.error);
+			}else{
+				folder.working = status;
+				folder.disabled = true;
+			}
+		})
+	}
+
 
 }]);
 
@@ -393,6 +539,22 @@ app.config(['$routeProvider',
 			controller:'database-addCtrl'
 		});
 
+
+		$routeProvider.when('/folders', {
+			templateUrl: 'views/folders.html',
+			controller:'foldersCtrl'
+		});
+
+		$routeProvider.when('/folder-add', {
+			templateUrl: 'views/folder-form.html',
+			controller:'folder-addCtrl'
+		});
+
+		$routeProvider.when('/folders/:id', {
+			templateUrl: 'views/folder-form.html',
+			controller:'folder-editCtrl'
+		});
+
 		$routeProvider.when('/databases/:id', {
 			templateUrl: 'views/database-form.html',
 			controller:'database-editCtrl'
@@ -402,6 +564,8 @@ app.config(['$routeProvider',
 			templateUrl: 'views/test.html',
 			controller:'testCtrl'
 		});
+
+
 
 		$routeProvider.otherwise({
 			redirectTo: '/test'

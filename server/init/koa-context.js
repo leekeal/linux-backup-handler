@@ -16,16 +16,16 @@ module.exports = function(app){
 		viewPath:'./views'
 	}));
 
-	app.use(function *(next){
-		console.log('--> '+this.url)
-		if(this.post){
-			console.log('------post-------')
-			console.log(this.post)
-		}
-		yield next;
-		console.log('------return-------')
-		console.log(this.body)
-	})
+	// app.use(function *(next){
+	// 	console.log('--> '+this.url)
+	// 	if(this.post){
+	// 		console.log('------post-------')
+	// 		console.log(this.post)
+	// 	}
+	// 	yield next;
+	// 	console.log('------return-------')
+	// 	console.log(this.body)
+	// })
 
 	
 

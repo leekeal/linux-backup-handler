@@ -1,7 +1,6 @@
-
 <div class="row">
 	<div class="col-xs-12">
-		<h3 class="text-center">Databases backup</h3>
+		<h3 class="text-center">Folders backup</h3>
 	</div>
 </div>
 <div class="row">
@@ -9,30 +8,30 @@
 		<table class="table text-center">
 			<tr class="btn-primary">
 				<td>Title</td>
-				<td>Database</td>
+				<td>size</td>
 				<td>Setting</td>
 				<td>backup</td>
 				<td>Status</td>
 				<td>
-					<a href="#/database-add"><i class="active fa fa-plus fa-2x"></i></a>
+					<a href="#/folder-add"><i class="active fa fa-plus fa-2x"></i></a>
 				</td>
 			</tr>
-			<tr ng-repeat="db in dbs">
-				<td>{{db.title}}</td>
-				<td>{{db.host}}</td>
+			<tr ng-repeat="folder in folders">
+				<td>{{folder.title}}</td>
+				<td></td>
 				<td>
-					<a href="#/databases/{{db.id}}"><i class="fa fa-pencil-square-o  fa-lg text-muted"></i></a>
+					<a href="#/folders/{{folder.id}}"><i class="fa fa-pencil-square-o  fa-lg text-muted"></i></a>
 				</td>
 				<td >
-					<button ng-disabled="db.disabled" type="button" class="btn btn-default btn-sm" ng-click = 'events.backup(db.id)'>backup</button>
+					<button ng-disabled="folder.disabled" type="button" class="btn btn-default btn-sm" ng-click = 'events.backup(folder.id)'>backup</button>
 				</td>
 				<td>
 					　&nbsp;
-					{{db.working.status}}
+					{{folder.working.status}}
 				</td>
 				<td>
-					{{ db.working.size/1024/1024 | number : 2}} 
-					<span ng-if = 'db.working.size'>MB</span>
+					{{ folder.working.size/1024/1024 | number : 2}} 
+					<span ng-if = 'folder.working.size'>MB</span>
 				</td>
 			</tr>
 		</table>
@@ -57,5 +56,3 @@
 		</div>
 	</div> -->
 </div>
-
-

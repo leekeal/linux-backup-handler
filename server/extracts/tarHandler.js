@@ -10,13 +10,14 @@ var fs = require('fs');
 
 
 
-function tar(origin,target,config,delay){
-	var target = target || origin + '.tar.gz'
-	var config = config || 'cvzf';
-	var delay = delay || 1000;
+function tar(origin,options){
+	var options = options || {}
+	var target = options.target || origin + '.tar.gz'
+	var args = options.args || 'czf';
+	var delay = options.delay || 1000;
 	var deferred = Q.defer();
 	
-	var command = 'tar -' +config + ' ' + target + ' ' + origin;
+	var command = 'tar -' +args + ' ' + target + ' ' + origin;
 
 	time = new Date().getTime();
 	var tarProcess = exec(command);
@@ -44,6 +45,7 @@ function tar(origin,target,config,delay){
 		var results = {
 			status:status,
 			time:ms2date(time),
+			originFile:origin,
 			fileName:target,
 			size:size,
 		}

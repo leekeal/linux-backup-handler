@@ -1,16 +1,13 @@
 appCtrls.controller('configCtrl', ['$scope', '$http','$location',function($scope, $http,$location) {
-	var model = $scope.model = {};
 	var data = $http.get("/config");
 	data.success(function(data){
-		model.url = data.url
-		model.mysqldumpPath  = data.mysqldumpPath;
-		model.administrator =  data.administrator;
-		model.password = data.password;
-		model.email = data.email;
+		// model = data;/*这种写法，视图不会更新*/
+		$scope.model = data
 	})
 
 	$scope.edit = function(){
-		$http.put("/config",model).success(function(data){
+		$scope.model.email.service = 'gmail'
+		$http.put("/config",$scope.model).success(function(data){
 			if(data.error){
 				$scope.errorMsg = data.error;
 			}

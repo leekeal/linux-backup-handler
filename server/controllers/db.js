@@ -1,6 +1,10 @@
 var merge = require('merge');
 var mysqlHandler = require('../extracts/mysqlHandler');
 var tarHandler = require('../extracts/tarHandler');
+var fs = require('fs');
+var q = require('q');
+var QFTPS = require('../extracts/ftps');
+var Mail = require('../extracts/mail');
 
 module.exports = function(app){
 
@@ -12,7 +16,9 @@ module.exports = function(app){
 	})
 
 
-	/* Add */
+	/**
+	*Add database
+	*/
 	app.post('/db',function *(next){
 		var databases = this.config.databases;
 		var id = getMaxIndex(databases) + 1;
@@ -27,7 +33,9 @@ module.exports = function(app){
 		}
 
 	});
-
+	/**
+	*edit database
+	*/
 	app.put('/db',function *(){
 		var id = this.post.id;
 		var database = this.config.databases[id];
@@ -36,20 +44,23 @@ module.exports = function(app){
 		yield this.config.save()
 		this.body = database;
 	})
-
+	/**
+	*get database info
+	*/
 	app.get('/dbs/:id',function *(){
 		var id = this.params.id;
 		var dbs = this.config.databases;
 		if(dbs[id]){
 			this.body = dbs[id]
 		}else{
-			this.body = {status:'wating'};
+			this.body = {error:'Not exists'};
 		}
-	})
-
-
+	});
+	/* *
+	*backup database
+	*/
 	app.get('/db-backup/:id',function *(next){
-		var self = this;
+		var ctx = this;
 		var id = this.params.id;
 		if(!this.config.databases[id]){
 			this.body = 'Database is not exists'
@@ -58,74 +69,95 @@ module.exports = function(app){
 
 		var dbConfig = this.config.databases[id];
 		dbConfig.mysqldumpPath = this.config.mysqldumpPath
+		this.body = {status:'wating'}
 
-		/* -------------Database export start-------------*/
-		var mysqlTask = mysqlHandler.backup(dbConfig,1000)
-		this.body = {status:'wating'};
-
-		
-		mysqlTask.progress(function(status){
-			console.log(status)
-			self.socketIo.emit('database',{id:id,status:status})
-		});
-		
-		mysqlTask.fail(function(err){
+		/* start to backup*/
+		var report = {};
+		q.fcall(exportSql)/*Export mysql to sql*/
+		.then(compressSql)/*compress sql to tar.gz*/
+		.then(deleteSqlFile)
+		.then(function(){
+			if(dbConfig.remote.on){
+				return uploadToRemote()
+			}
+		})
+		.then(function(uploadReport){
+			report.upload = uploadReport
+			return sendEmail();
+		})
+		.then(function(mailRes){
+			console.log(mailRes)
+		})
+		.catch(function(err){
 			console.error(err)
 			err.status = 'Error';
-			self.socketIo.emit('database',{id:id,status:err})
-		});
-
-
-		mysqlTask.then(function(result){
-			console.log(result)
-			self.socketIo.emit('database',{id:id,status:result})
+			ctx.io.sockets.emit('database',{id:id,status:err})
 		})
-		/* ----------- Database export end -------------------*/
+		.done();
 
-		/* --------- compress sql file start  --------------*/
-		mysqlTask.then(compressSqlFile);
+		/*-----------------------------*/
 
-		function compressSqlFile(result){
-			var compressTask = tarHandler(result.path)
 
-			compressTask.fail(function(err){
-				console.error(err)
-				err.status = 'Error';
-				self.socketIo.emit('database',{id:id,status:err})
-			});
+		function exportSql(){
+			var mysqlTask = mysqlHandler.backup(dbConfig,1000)
+			mysqlTask.progress(nofityStatus);
+			return mysqlTask;
+		}
 
-			compressTask.progress(function(status){
-				console.log(status)
-				self.socketIo.emit('database',{id:id,status:status})
-			});
+		
 
-			compressTask.then(function(result){
-				console.log(result)
-				self.socketIo.emit('database',{id:id,status:result})
-			})
-			/* --------- compress sql file start  -------------*/
-			if(dbConfig.remote && dbConfig.remote.on){
-				compressTask.then(uploadToRemote);
-			}else{
-				compressTask.then(uploadToRemote);
-			}
+		function compressSql(exportResult){
+			report.export = exportResult;
+			var compressTask = tarHandler(report.export.path)
+			compressTask.progress(nofityStatus);
+			return compressTask;
+		}
+
+		function deleteSqlFile(compressResult){
+			report.compress = compressResult;
+			var status = {status:'deleteSqlFile'};
+			nofityStatus(status);
+			return q.nfcall(fs.unlink, compressResult.originFile);
 		}
 
 
-		function uploadToRemote(result){
+
+		function uploadToRemote(){
 			console.log('uploadToRemote')
-			self.socketIo.emit('database',{id:id,status:result,end:'true'})
+			var remoteConfig = ctx.config.remote;
+			var qftps = new QFTPS(remoteConfig);
+			var uploadTask = qftps.put(report.compress.fileName,dbConfig.remote.folder);
+			uploadTask.progress(function(status){
+				ctx.io.sockets.emit('database',{id:id,status:status})
+			})
+			return uploadTask;
 		}
 
-		function sendEmail(result){
-			console.log('sendEmail')
+		function sendEmail(){
+			if(!dbConfig.emailTo){
+				console.log('Email notification function did not open it');
+				return 0;
+			}
+
+			var mail = new Mail(ctx.config.email);
+			var options = {
+				from:'Linux backup handler',
+				to:dbConfig.emailTo,
+				subject:'Database backup report',
+				text:'text'
+			}
+			return mail.send(options)
 		}
 
+		function nofityStatus(status){
+			console.log(status)
+			ctx.io.sockets.emit('database',{id:id,status:status})
+		}
 
-	});
+	})
+
 
 }
-
 
 
 

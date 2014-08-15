@@ -32,6 +32,22 @@ app.config(['$routeProvider',
 			controller:'database-addCtrl'
 		});
 
+
+		$routeProvider.when('/folders', {
+			templateUrl: 'views/folders.html',
+			controller:'foldersCtrl'
+		});
+
+		$routeProvider.when('/folder-add', {
+			templateUrl: 'views/folder-form.html',
+			controller:'folder-addCtrl'
+		});
+
+		$routeProvider.when('/folders/:id', {
+			templateUrl: 'views/folder-form.html',
+			controller:'folder-editCtrl'
+		});
+
 		$routeProvider.when('/databases/:id', {
 			templateUrl: 'views/database-form.html',
 			controller:'database-editCtrl'
@@ -41,6 +57,8 @@ app.config(['$routeProvider',
 			templateUrl: 'views/test.html',
 			controller:'testCtrl'
 		});
+
+
 
 		$routeProvider.otherwise({
 			redirectTo: '/test'

@@ -3,7 +3,7 @@
 var child_process = require('child_process')
 var exec = child_process.exec;
 var port = 3000;
-var server = exec('PORT=' + port+ ' node-dev --harmony app.js',function(err,data){
+var server = exec('PORT=' + port+ ' node-dev --debug --harmony app.js',function(err,data){
 	if(err){
 		console.error(err)
 	}

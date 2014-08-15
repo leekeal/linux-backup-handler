@@ -14,6 +14,7 @@ module.exports = function(app){
 		config.installed = true;
 	}catch(err){
 		config.databases = {};/*Set databases obj*/
+		config.folders = {};
 		config.installed = false;
 	}
 
