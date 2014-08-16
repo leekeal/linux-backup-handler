@@ -30,6 +30,7 @@ exports.backup = function(dbCongfig,delay){
 	var exportMonitor = setInterval(function(){
 		fs.stat(path,function(err,stats){
 			if(err || status == 'done'){
+				deferred.reject(err);
 				deferred.notify({status:'done'});
 				clearInterval(exportMonitor);
 			}else{

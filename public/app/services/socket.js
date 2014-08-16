@@ -26,7 +26,7 @@ app.service('$socket',function(){
 
 
 function init(){
-	var socket = io('http://localhost');
+	var socket = io();
 	socket.on('connected', function (data) {
 		console.log(data);
 	});

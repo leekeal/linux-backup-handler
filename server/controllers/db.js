@@ -93,6 +93,7 @@ module.exports = function(app){
 
 
 		function exportSql(){
+			console.log('export sql start')
 			var mysqlTask = mysqlHandler.backup(dbConfig,1000)
 			mysqlTask.progress(nofityStatus);
 			return mysqlTask;
@@ -101,6 +102,7 @@ module.exports = function(app){
 		
 
 		function compressSql(exportResult){
+			console.log('compressSql start')
 			report.export = exportResult;
 			var compressTask = tarHandler(report.export.path)
 			compressTask.progress(nofityStatus);
