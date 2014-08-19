@@ -28,8 +28,10 @@ function tar(origin,options){
 	var tarMonitor = setInterval(function(){
 		fs.stat(target,function(err,stats){
 			if(err){
-				deferred.reject(err);
-				clearInterval(tarMonitor);
+				// deferred.reject(err);
+				// clearInterval(tarMonitor);
+				console.error(err)
+				return 
 			}
 			else if(status == 'done'){
 				deferred.notify({status:'done'});

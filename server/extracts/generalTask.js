@@ -6,7 +6,7 @@ exports.uploadAndEmail = function(config,taskConfig,taskReport,nofityStatus){
 	var deferred = q.defer();
 
 	q.fcall(function(){
-		if(taskConfig.remote.on){
+		if(taskConfig.remote && taskConfig.remote.on){
 			var uploadTaks = uploadToRemote(config.remote,taskConfig,taskReport);
 			uploadTaks.progress(nofityStatus)
 			return uploadTaks;
