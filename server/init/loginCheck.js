@@ -1,6 +1,6 @@
 module.exports = function(app){
 	app.use(function *(next){
-		if(this.session.user || this.path == '/login'){
+		if(this.session.user || this.path == '/login' || this.path == '/install'){
 			yield next;
 		}
 		else{

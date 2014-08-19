@@ -29,11 +29,15 @@ exports.backup = function(dbCongfig,delay){
 	/* Monitoring the file size change every other delay*/
 	var exportMonitor = setInterval(function(){
 		fs.stat(path,function(err,stats){
-			if(err || status == 'done'){
+			if(err){
 				deferred.reject(err);
+				clearInterval(exportMonitor);
+			}
+			else if(status == 'done'){
 				deferred.notify({status:'done'});
 				clearInterval(exportMonitor);
-			}else{
+			}
+			else{
 				var size = stats.size;
 				deferred.notify({status:status,size:size});
 			}

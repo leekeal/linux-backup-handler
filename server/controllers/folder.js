@@ -75,6 +75,8 @@ module.exports = function(app){
 		})
 		.catch(function(err){
 			console.error(err)
+			err.status = 'Error';
+			ctx.io.sockets.emit('folder',{id:id,status:err})
 		})
 
 

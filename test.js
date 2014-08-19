@@ -103,21 +103,25 @@ var co_test = thunkify(test);
 // );
 
 
-var FTPS = require('ftps');
-try{
-    var ftps = new FTPS({
-      host: 'fwind.me', 
-      username: 'leeke', 
-      password: 'ls20080813', 
-      protocol: 'ftp', 
+// var FTPS = require('ftps');
+// try{
+//     var ftps = new FTPS({
+//       host: 'fwind.me', 
+//       username: 'leeke', 
+//       password: 'ls20080813', 
+//       protocol: 'ftp', 
 
-  });
-}catch(err){
-    console.error(err)
-}
+//   });
+// }catch(err){
+//     console.error(err)
+// }
 
-ftps.put('./test.js', '~/backup/').exec(function(err,data){
-    console.log('test')
-    console.log(data)
-})
+// ftps.put('./test.js', '~/backup/').exec(function(err,data){
+//     console.log('test')
+//     console.log(data)
+// })
 
+var path = require('path');
+
+var filePath = path.join('/home/leeke','~/backup');
+console.log(filePath);

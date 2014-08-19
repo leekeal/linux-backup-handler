@@ -27,10 +27,15 @@ function tar(origin,options){
 	/* Monitoring the file size change every other delay*/
 	var tarMonitor = setInterval(function(){
 		fs.stat(target,function(err,stats){
-			if(err || status == 'done'){
+			if(err){
+				deferred.reject(err);
+				clearInterval(tarMonitor);
+			}
+			else if(status == 'done'){
 				deferred.notify({status:'done'});
 				clearInterval(tarMonitor);
-			}else{
+			}
+			else{
 				var size = stats.size;
 				deferred.notify({status:status,size:size});
 			}
